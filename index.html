@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>leap. — Your Health Has Been Speaking</title>
+
+    <!-- Only used for helper copy / inputs, per spec -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet" />
+
+    <style>
+      /* -------------------------------------------------------
+         Design tokens & easy tweak points (edit these first)
+         ------------------------------------------------------- */
+      :root {
+        /* Colors */
+        --bg: #000;               /* page background */
+        --fg: #fff;               /* main text */
+        --accent: #b286fd;        /* purple accent */
+        --muted: #c9c9c9;         /* placeholder grey */
+
+        /* Dots options */
+        --grid-size: 24px;        /* spacing between dots */
+        --dot-alpha: 0.12;        /* brightness */
+
+        /* Layout */
+        --header-height: 90px;   /* keeps hero vertically centered below */
+        --brand-offset: 70px;     /* ⬇ move 'leap.' down/up (positive = down) */
+
+        /* Hero spacing controls (adjust to taste) */
+        --space-h1-top: 0px;      /* top margin for H1 */
+        --space-between-h1-eyebrow: 35px;  /* H1 → eyebrow */
+        --space-between-eyebrow-form: 60px;/* eyebrow → form */
+        --space-between-form-subcopy: 72px;/* form → paragraph */
+
+        /* Ellipse 53 top-right placement (edit to nudge) */
+        --e53-left: 950px;  /* moved further right vs last version */
+        --e53-top: -750px;  /* moved further up to hug top-right corner */
+      }
+
+      /* Basic reset */
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body { font-family: Helvetica, Arial, sans-serif; color: var(--fg); background: var(--bg); overflow: hidden; }
+
+      /* ---------------------------------
+         Background: 3 positioned ellipses
+         --------------------------------- */
+      .ellipses { position: fixed; inset: 0; z-index: -5; pointer-events: none; }
+
+      /* Ellipse 53 — top-right glow (moved per request using CSS vars above) */
+      .e53 { position: absolute; width: 1329px; height: 1329px; left: var(--e53-left); top: var(--e53-top); opacity: 0.8; mix-blend-mode: plus-lighter; background: radial-gradient(50% 50% at 50% 50%, var(--accent) 0%, #000 100%); border-radius: 9999px; }
+      /* Ellipse 54 — left-mid soft halo */
+      .e54 { position: absolute; width: 1421px; height: 1401px; left: -422px; top: 125px; opacity: 0.3; mix-blend-mode: difference; background: radial-gradient(50% 50% at 50% 50%, var(--accent) 0%, #000 100%); border-radius: 9999px; }
+      /* Ellipse 55 — bottom-right glow */
+      .e55 { position: absolute; width: 1402px; height: 1323px; left: 1075px; top: 650px; mix-blend-mode: plus-lighter; background: radial-gradient(50% 50% at 50% 50%, var(--accent) 0%, #000 100%); border-radius: 9999px; }
+
+      /* -------------------------------------
+         Dots overlay — pick one style:
+         - add class .static for no motion
+         - add class .moving for subtle pseudo-random drift
+         ------------------------------------- */
+      .dots { position: fixed; inset: 0; z-index: -4; pointer-events: none; }
+      .dots::before, .dots::after { /* two layers = more organic movement */
+        content: ""; position: absolute; inset: -12%;
+        background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,var(--dot-alpha)) 1px, transparent 1px);
+        background-size: var(--grid-size) var(--grid-size);
+      }
+      /* Option 1: static */
+      .dots.static::before, .dots.static::after { animation: none; }
+      /* Option 2: classy motion (slightly more random & a bit quicker than before) */
+      .dots.moving::before { animation: dotsDriftA 70s ease-in-out infinite alternate; }
+      .dots.moving::after  { animation: dotsDriftB 82s ease-in-out infinite alternate; opacity: .95; }
+      @keyframes dotsDriftA {
+        0%   { transform: translate3d(0,0,0) scale(1); }
+        22%  { transform: translate3d(-90px,-60px,0) scale(1.01); }
+        57%  { transform: translate3d(50px,-40px,0)  scale(1.007); }
+        100% { transform: translate3d(0,0,0)        scale(1); }
+      }
+      @keyframes dotsDriftB {
+        0%   { transform: translate3d(0,0,0) scale(1); }
+        35%  { transform: translate3d(110px,60px,0)  scale(1.01); }
+        78%  { transform: translate3d(-70px,30px,0) scale(1.003); }
+        100% { transform: translate3d(0,0,0)        scale(1); }
+      }
+      @media (prefers-reduced-motion: reduce) { .dots.moving::before, .dots.moving::after { animation: none; } }
+
+      /* -----------------
+         Header (logo)
+         ----------------- */
+      header { position: relative; height: var(--header-height); display: grid; place-items: center; }
+      .brand { font-family: Helvetica, Arial, sans-serif; font-weight: 700; font-size: 36px; line-height: 41px; letter-spacing: -0.04em; color: var(--accent); transform: translateY(var(--brand-offset)); /* ← tweak this to move 'leap.' */ }
+
+      /* ------------------------------------------
+         Main block: vertically centered hero group
+         ------------------------------------------ */
+      main { height: calc(100vh - var(--header-height)); display: grid; place-items: center; }
+      .hero { width: 100%; max-width: 1199px; padding: 0 20px; }
+
+      /* Headline — Helvetica Medium 70/80, not bold */
+      h1 { font-family: "Helvetica Medium", Helvetica, Arial, sans-serif; font-weight: 500; font-size: 70px; line-height: 80px; text-align: center; margin: var(--space-h1-top) 0 0; }
+      h1 .accent { color: var(--accent); font-weight: 500; }
+
+      /* Eyebrow line — add spacing controlled by CSS vars above */
+      .eyebrow { margin: var(--space-between-h1-eyebrow) auto 0; width: 100%; max-width: 599px; font-family: Poppins, Arial, sans-serif; font-weight: 300; font-size: 18px; line-height: 27px; text-align: center; }
+
+      /* Email form group — space it out from the eyebrow */
+      .form { margin: var(--space-between-eyebrow-form) auto 0; display: grid; grid-template-columns: 335px auto; gap: 20px; justify-content: center; align-items: center; }
+      .input-wrap { position: relative; width: 335px; height: 61px; border-radius: 18px; box-shadow: 0 4px 4px rgba(0,0,0,0.25); background: #fff; display: grid; align-items: center; }
+      .input { width: 100%; height: 100%; padding: 0 18px; border: 0; outline: none; background: transparent; font-family: Poppins, Arial, sans-serif; font-weight: 500; font-size: 18px; color: #000; }
+      .input::placeholder { color: var(--muted); }
+      .error { position: absolute; left: 15px; bottom: -18px; font-family: Helvetica, Arial, sans-serif; font-weight: 300; font-size: 12px; line-height: 1; color: #ff5a5a; display: none; }
+      .input.invalid + .error { display: block; }
+      .btn { height: 61px; padding: 0 28px; border-radius: 49px; border: 1px solid var(--accent); background: #c19dff; font-family: Poppins, Arial, sans-serif; font-weight: 500; font-size: 20px; color: #000; cursor: pointer; }
+
+      /* Subcopy — spaced down more via CSS var */
+      .subcopy { margin: var(--space-between-form-subcopy) auto 0; width: 100%; max-width: 812px; font-family: Helvetica, Arial, sans-serif; font-weight: 400; font-size: 24px; line-height: 32px; color: #fff; text-align: left; }
+
+      ::selection { background: rgba(178,134,253,0.35); }
+      .sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; white-space: nowrap; }
+
+      /* ========================= */
+      /* RESPONSIVE OVERRIDES ONLY */
+      /* (Desktop styles above remain unchanged) */
+      /* ========================= */
+
+      /* 1) Viewport fix for mobile browsers with dynamic URL bars */
+      @supports (height: 100svh) {
+        main { height: calc(100svh - var(--header-height)); }
+      }
+
+      /* 2) Tablet tweaks (≤ 1024px) */
+      @media (max-width: 1024px) {
+        :root {
+          --header-height: 80px;         /* slightly shorter header on tablet */
+          --brand-offset: 50px;          /* nudges logo down a touch */
+          --space-between-h1-eyebrow: 28px;
+          --space-between-eyebrow-form: 44px;
+          --space-between-form-subcopy: 56px;
+        }
+
+        .hero { padding: 0 24px; }
+
+        /* Scale headline down but keep the feel */
+        h1 { font-size: clamp(40px, 6.2vw, 60px); line-height: 1.08; }
+
+        /* Keep eyebrow readable and contained */
+        .eyebrow { max-width: 88vw; font-size: 17px; line-height: 26px; }
+
+        /* Make form breathe horizontally */
+        .form { grid-template-columns: 1fr auto; gap: 14px; }
+        .input-wrap { width: 100%; }
+      }
+
+      /* 3) Mobile tweaks (≤ 640px) */
+      @media (max-width: 640px) {
+        :root {
+          --header-height: 68px;
+          --brand-offset: 40px;
+          --space-h1-top: 0px;                 /* top margin for H1 */
+          --space-between-h1-eyebrow: 22px;    /* H1 → eyebrow */
+          --space-between-eyebrow-form: 28px;  /* eyebrow → form */
+          --space-between-form-subcopy: 40px;  /* form → paragraph */
+        }
+
+        body { overflow: auto; } /* allow page to scroll on small screens so nothing clips */
+
+        .hero { padding: 0 18px; }
+
+        h1 { font-size: clamp(30px, 8vw, 44px); line-height: 1.06; }
+
+        .eyebrow { max-width: 92vw; font-size: 16px; line-height: 24px; }
+
+        /* Stack the form vertically with full-width controls */
+        .form { grid-template-columns: 1fr; gap: 12px; width: 100%; }
+        .input-wrap { width: 100%; height: 56px; }
+        .input { font-size: 16px; }
+        .btn { width: 100%; height: 54px; font-size: 18px; }
+
+        /* Paragraph remains left-aligned per spec, but keep a comfortable width */
+        .subcopy { max-width: 92vw; font-size: 20px; line-height: 28px; }
+
+        /* Dots + ellipses: reduce visual weight on tiny screens while preserving look */
+        .dots::before, .dots::after { inset: -18%; }
+        .e53 { transform: translate(10vw, -8vh) scale(0.85); }
+        .e54 { transform: translate(-6vw, 2vh) scale(0.85); }
+        .e55 { transform: translate(8vw, 6vh) scale(0.8); }
+      }
+
+      /* 4) Small phones (≤ 380px) */
+      @media (max-width: 380px) {
+        :root { --brand-offset: 36px; }
+        h1 { font-size: clamp(26px, 9.5vw, 38px); }
+        .btn { height: 50px; font-size: 17px; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- 3 radial gradient layers -->
+    <div class="ellipses" aria-hidden="true">
+      <div class="e53"></div>
+      <div class="e54"></div>
+      <div class="e55"></div>
+    </div>
+
+    <!-- Dots: use .static for still, .moving for subtle movement -->
+    <div class="dots moving" aria-hidden="true"></div>
+
+    <!-- Header brand -->
+    <header>
+      <div class="brand">leap.</div>
+    </header>
+
+    <!-- Hero is vertically centered under the header (page is not scrollable) -->
+    <main>
+      <section class="hero" aria-labelledby="title">
+        <h1 id="title">Your Health Has Been Speaking.<br /><span class="accent">Now It’s Time to Listen.</span></h1>
+        <p class="eyebrow">Into the era of health that thinks, learns and evolves with you.<br />Beyond tracking. Beyond dashboards.</p>
+
+        <form class="form" id="waitlist-form" novalidate>
+          <div class="input-wrap">
+            <label for="email" class="sr-only">Email address</label>
+            <input id="email" name="email" type="email" class="input" placeholder="you@example.com" autocomplete="email" required />
+            <div class="error" id="email-error">Please enter a valid email address.</div>
+          </div>
+          <button class="btn" type="submit" id="submit-btn">Join Waitlist</button>
+        </form>
+
+        <p class="subcopy">Leap unifies your wearables, nutrition, wellness apps, and lab results into one intelligent health command center. It reveals patterns, predicts needs, and guides your next move—your personal health strategist.</p>
+      </section>
+    </main>
+
+    <script>
+      // Basic inline validation + Apps Script submission
+      const form = document.getElementById('waitlist-form');
+      const email = document.getElementById('email');
+      const err   = document.getElementById('email-error');
+      const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // common front-end email check
+
+      // Your Google Apps Script Web App URL (from your deployment)
+      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6A-qJe1N2JE7pOKWXa5SH0bPflvZbD2c3F69D1dUcxY1y3_Nbi4ykoNPNEfGkcyqB/exec';
+      // Shared secret you set in Script Properties (passed via query param to avoid preflight)
+      const SHARED_SECRET = '2asd65asd362asd65asd32asd';
+
+      function setValidity(isValid){
+        email.classList.toggle('invalid', !isValid);
+        err.style.display = isValid ? 'none' : 'block';
+      }
+
+      email.addEventListener('blur', () => setValidity(EMAIL_RE.test(email.value.trim())));
+      email.addEventListener('input', () => { if (err.style.display === 'block') setValidity(EMAIL_RE.test(email.value.trim())); });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const value = email.value.trim();
+        const ok = EMAIL_RE.test(value);
+        setValidity(ok);
+        if (!ok) return;
+
+        try {
+          // Use text/plain to avoid CORS preflight; include shared secret as a query param
+          const res = await fetch(`${APPS_SCRIPT_URL}?k=${encodeURIComponent(SHARED_SECRET)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ email: value })
+          });
+
+          // Attempt to parse JSON; fall back to res.ok
+          let payload;
+          try { payload = await res.json(); } catch (_) { payload = { ok: res.ok }; }
+
+          if (res.ok && (payload.ok === true || payload.result === 'success')) {
+            form.reset();
+            setValidity(true);
+            alert("Thanks! You're on the waitlist.");
+          } else {
+            alert('Unable to submit right now. Please try again in a moment.');
+          }
+        } catch (_) {
+          alert('Unable to submit right now. Please try again in a moment.');
+        }
+      });
+    </script>
+  </body>
+</html>
