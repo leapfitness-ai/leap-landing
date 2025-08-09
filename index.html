@@ -109,11 +109,27 @@
       /* Email form group — space it out from the eyebrow */
       .form { margin: var(--space-between-eyebrow-form) auto 0; display: grid; grid-template-columns: 335px auto; gap: 20px; justify-content: center; align-items: center; }
       .input-wrap { position: relative; width: 335px; height: 61px; border-radius: 18px; box-shadow: 0 4px 4px rgba(0,0,0,0.25); background: #fff; display: grid; align-items: center; }
-      .input { width: 100%; height: 100%; padding: 0 18px; border: 0; outline: none; background: transparent; font-family: Poppins, Arial, sans-serif; font-weight: 500; font-size: 18px; color: #000; }
+      .input { width: 100%; height: 100%; padding: 0 18px; border: 0; outline: none; background: transparent; font-family: Poppins, Arial, sans-serif; font-weight: 300; font-size: 18px; color: #000; }
+      /* Keep rounded corners under focus & autofill */
+      .input-wrap { overflow: hidden; /* clips any inner focus/auto-fill background to rounded corners */ }
+      .input {
+        -webkit-appearance: none; /* prevent browser default styles that can square corners on iOS/Chrome */
+        appearance: none;
+        border-radius: inherit;   /* inherit 18px from .input-wrap */
+        background-clip: padding-box; /* ensures background respects inner radius */
+      }
+      /* Neutralize Chrome/Safari autofill yellow + keep corners */
+      .input:-webkit-autofill,
+      .input:-webkit-autofill:hover,
+      .input:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0px 1000px #fff inset; /* keep white background */
+        box-shadow: inset 0 0 0 1000px #fff;
+        border-radius: inherit;
+      }
       .input::placeholder { color: var(--muted); }
       .error { position: absolute; left: 15px; bottom: -18px; font-family: Helvetica, Arial, sans-serif; font-weight: 300; font-size: 12px; line-height: 1; color: #ff5a5a; display: none; }
       .input.invalid + .error { display: block; }
-      .btn { height: 61px; padding: 0 28px; border-radius: 49px; border: 1px solid var(--accent); background: #c19dff; font-family: Poppins, Arial, sans-serif; font-weight: 500; font-size: 20px; color: #000; cursor: pointer; }
+      .btn { height: 61px; padding: 0 28px; border-radius: 49px; border: 1px solid var(--accent); background: #c19dff; font-family: Poppins, Arial, sans-serif; font-weight: 300; font-size: 20px; color: #000; cursor: pointer; }
 
       /* Subcopy — spaced down more via CSS var */
       .subcopy { margin: var(--space-between-form-subcopy) auto 0; width: 100%; max-width: 812px; font-family: Helvetica, Arial, sans-serif; font-weight: 400; font-size: 24px; line-height: 32px; color: #fff; text-align: left; }
@@ -194,6 +210,41 @@
         :root { --brand-offset: 36px; }
         h1 { font-size: clamp(26px, 9.5vw, 38px); }
         .btn { height: 50px; font-size: 17px; }
+      }
+
+      /* Mobile-specific adjustments */
+      @media (max-width: 768px) {
+        /* Example: adjust top margin of main heading */
+        .main-heading {
+          margin-top: 20px; /* Reduce or increase as needed */
+          font-size: 36px; /* Smaller font for mobile */
+        }
+
+        /* Example: spacing between sections */
+        .section {
+          margin-bottom: 20px; /* Adds breathing room */
+        }
+
+        /* Example: center text or change alignment */
+        .subheading,
+        .description {
+          text-align: center;
+          padding: 0 16px; /* Add side padding so text isn't flush with screen edge */
+        }
+
+        /* Example: form inputs on mobile */
+        .input-wrap {
+          width: 90%;
+          margin: 0 auto; /* center horizontally */
+        }
+
+        /* Example: move elements vertically */
+        .hero-content {
+          display: flex;
+          flex-direction: column;
+          gap: 24px; /* space between child elements */
+          align-items: center;
+        }
       }
     </style>
   </head>
